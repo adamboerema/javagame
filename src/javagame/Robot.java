@@ -7,7 +7,7 @@ public class Robot {
 	
 	final int JUMPSPEED = -15;
 	final int MOVESPEED = 5;
-	final int GROUND = 332;
+	final int GROUND = 382;
 	
 	private int centerX = 100;
 	private int centerY = GROUND;
@@ -39,8 +39,8 @@ public class Robot {
 			centerX += speedX;
 		}
 		if(speedX > 0 && centerX > 200){
-			bg1.setSpeedX(-MOVESPEED);
-			bg2.setSpeedX(-MOVESPEED);
+			bg1.setSpeedX(-MOVESPEED/5);
+			bg2.setSpeedX(-MOVESPEED/5);
 		}
 		
 		//vertical speed
