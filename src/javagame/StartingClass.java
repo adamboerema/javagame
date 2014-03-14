@@ -2,6 +2,7 @@ package javagame;
 
 import java.applet.Applet;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -18,7 +19,7 @@ import javagame.framework.Animation;
 public class StartingClass extends Applet implements Runnable, KeyListener{
 	
 	private static Robot robot;
-	private Heliboy hb, hb2;
+	public static Heliboy hb, hb2;
 	private Image image, currentSprite, character, character2, character3, characterDown, 
 	characterJumped, background, heliboy, heliboy2, heliboy3, heliboy4, heliboy5;
 	private Graphics second;
@@ -27,6 +28,14 @@ public class StartingClass extends Applet implements Runnable, KeyListener{
 	private static Background bg1, bg2;
 	private Animation anim, hanim;
 	private ArrayList<Tile> tilearray = new ArrayList<Tile>();
+	public static int score = 0;
+	private Font font = new Font(null, Font.BOLD, 30);
+	
+	enum GameState{
+		Running, Dead
+	}
+	
+	GameState state = GameState.Running;
 	
 	@Override
 	public void init(){
@@ -86,37 +95,42 @@ public class StartingClass extends Applet implements Runnable, KeyListener{
 	
 	@Override
 	public void run(){
-		while(true){
-			robot.update();
-			if(robot.isJumped()){
-				currentSprite = characterJumped;
-			} else if (robot.isJumped() == false && robot.isDucked() == false){
-				currentSprite = anim.getImage();
-			}
-			
-			ArrayList projectiles = robot.getProjectiles();
-			for(int i = 0; i < projectiles.size(); i++){
-				Projectile p = (Projectile) projectiles.get(i);
-				if(p.isVisible() == true){
-					p.update();
-				} else {
-					projectiles.remove(i);
+		if(state == GameState.Running){
+			while(true){
+				robot.update();
+				if(robot.isJumped()){
+					currentSprite = characterJumped;
+				} else if (robot.isJumped() == false && robot.isDucked() == false){
+					currentSprite = anim.getImage();
 				}
-			}
-			
-			updateTiles();
-			hb.update();
-			hb2.update();
-			bg1.update();
-			bg2.update();
-			
-			animate();
-			repaint();
-			
-			try{
-				Thread.sleep(17);
-			} catch (InterruptedException e){
-				e.printStackTrace();
+				
+				ArrayList projectiles = robot.getProjectiles();
+				for(int i = 0; i < projectiles.size(); i++){
+					Projectile p = (Projectile) projectiles.get(i);
+					if(p.isVisible() == true){
+						p.update();
+					} else {
+						projectiles.remove(i);
+					}
+				}
+				
+				updateTiles();
+				hb.update();
+				hb2.update();
+				bg1.update();
+				bg2.update();
+				
+				animate();
+				repaint();
+				
+				try{
+					Thread.sleep(17);
+				} catch (InterruptedException e){
+					e.printStackTrace();
+				}
+				if(robot.getCenterY() > 500){
+					state = GameState.Dead;
+				}
 			}
 		}
 	}
@@ -156,20 +170,31 @@ public class StartingClass extends Applet implements Runnable, KeyListener{
 	}
 	
 	public void paint(Graphics g){
-		g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
-		g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
-		paintTiles(g);
 		
-		ArrayList projectiles = robot.getProjectiles();
-		for(int i = 0; i < projectiles.size(); i++){
-			Projectile p = (Projectile) projectiles.get(i);
-			g.setColor(Color.YELLOW);
-			g.fillRect(p.getX(), p.getY(), 10, 5);
+		if(state == GameState.Running){
+			g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
+			g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
+			paintTiles(g);
+			
+			ArrayList projectiles = robot.getProjectiles();
+			for(int i = 0; i < projectiles.size(); i++){
+				Projectile p = (Projectile) projectiles.get(i);
+				g.setColor(Color.YELLOW);
+				g.fillRect(p.getX(), p.getY(), 10, 5);
+			}
+			
+			g.drawImage(currentSprite, robot.getCenterX()-61, robot.getCenterY()-63, this);
+			g.drawImage(hanim.getImage(), hb.getCenterX() - 48,  hb.getCenterY()-48, this);
+			g.drawImage(hanim.getImage(), hb2.getCenterX() - 48,  hb2.getCenterY()-48, this);
+			g.setFont(font);
+			g.setColor(Color.WHITE);
+			g.drawString(Integer.toString(score), 740, 30);
+		} else if (state == GameState.Dead){
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, 800, 400);
+			g.setColor(Color.WHITE);
+			g.drawString("Dead", 360, 240);
 		}
-		
-		g.drawImage(currentSprite, robot.getCenterX()-61, robot.getCenterY()-63, this);
-		g.drawImage(hanim.getImage(), hb.getCenterX() - 48,  hb.getCenterY()-48, this);
-		g.drawImage(hanim.getImage(), hb2.getCenterX() - 48,  hb2.getCenterY()-48, this);
 	}
 	
 	private void updateTiles(){
